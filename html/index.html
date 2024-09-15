@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speedometer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #speedometer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
+            opacity: 0;
+            filter: blur(5px);
+        }
+        #speed {
+            font-size: 48px;
+            font-family: 'Nexa Heavy', sans-serif;
+        }
+        #unit {
+            font-size: 24px;
+            font-family: 'Nexa Light', sans-serif;
+        }
+        .glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        .dark {
+            color: #333;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="speedometer">
+        <div id="speed"></div>
+        <div id="unit" class="glow"></div>
+    </div>
+
+    <script>
+        const speedometer = document.getElementById('speedometer');
+        const speedElement = document.getElementById('speed');
+        const unitElement = document.getElementById('unit');
+
+        function updateSpeed(speed, unit) {
+            const paddedSpeed = speed.toString().padStart(3, '0');
+            let firstNonZero = paddedSpeed.length;
+            for (let i = 0; i < paddedSpeed.length; i++) {
+                if (paddedSpeed[i] !== '0') {
+                    firstNonZero = i;
+                    break;
+                }
+            }
+            
+            speedElement.innerHTML = paddedSpeed.split('').map((digit, index) => {
+                return `<span class="${index < firstNonZero ? 'dark' : 'glow'}">${digit}</span>`;
+            }).join('');
+            unitElement.textContent = unit;
+        }
+
+        function showSpeedometer(blur) {
+            speedometer.style.opacity = blur === 'in' ? '1' : '0';
+            speedometer.style.filter = blur === 'in' ? 'blur(0)' : 'blur(5px)';
+        }
+
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (data.type === 'updateSpeed') {
+                updateSpeed(data.speed, data.unit);
+            } else if (data.type === 'showSpeedometer') {
+                showSpeedometer(data.blur);
+            }
+        });
+    </script>
+</body>
+</html>
